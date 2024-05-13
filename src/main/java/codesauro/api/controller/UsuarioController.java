@@ -1,5 +1,7 @@
 package codesauro.api.controller;
 
+import codesauro.api.domain.autenticacao.Autenticacao;
+import codesauro.api.domain.autenticacao.AutenticacaoRepository;
 import codesauro.api.domain.usuario.Usuario;
 import codesauro.api.domain.usuario.UsuarioRepository;
 import codesauro.api.domain.usuario.*;
@@ -8,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -19,13 +22,25 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository repository;
 
+    @Autowired
+    private AutenticacaoRepository autenticacaoRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @PostMapping
     @Transactional
-    public ResponseEntity cadastrar(@RequestBody @Valid DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
-        var usuario = new Usuario(dados);
+    public ResponseEntity cadastrar(@RequestBody DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
+        String senhaCriptografada = passwordEncoder.encode(dados.senha());
+        var usuario = new Usuario(dados.nome(), dados.apelido(), dados.email(), dados.telefone(), dados.data_de_nascimento(), senhaCriptografada);
         repository.save(usuario);
-        var uri = uriBuilder.path("/medicos/{id}").buildAndExpand(usuario.getId()).toUri();
 
+        var autenticacao = new Autenticacao();
+        autenticacao.setLogin(dados.apelido());
+        autenticacao.setSenha(senhaCriptografada);
+        autenticacaoRepository.save(autenticacao);
+
+        var uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(usuario.getId()).toUri();
         return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario));
     }
 
