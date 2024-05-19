@@ -18,33 +18,45 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
+    private Algorithm getAlgorithm() {
+        return Algorithm.HMAC256(secret);
+    }
+
     public String gerarToken(Autenticacao autenticacao) {
         try {
-            var algoritmo = Algorithm.HMAC256(secret);
+            var algoritmo = getAlgorithm();
             return JWT.create()
                     .withIssuer("BackEnd da aplicação CodeSauro")
                     .withSubject(autenticacao.getLogin())
                     .withClaim("id", autenticacao.getId())
                     .withExpiresAt(dataExpiracao())
                     .sign(algoritmo);
-        } catch (JWTCreationException exception){
-            throw new RuntimeException("erro ao gerrar token jwt", exception);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token JWT", exception);
         }
     }
 
     public String getSubject(String tokenJWT) {
         try {
-            var algoritmo = Algorithm.HMAC256(secret);
+            var algoritmo = getAlgorithm();
             return JWT.require(algoritmo)
                     .withIssuer("BackEnd da aplicação CodeSauro")
                     .build()
                     .verify(tokenJWT)
                     .getSubject();
         } catch (JWTVerificationException exception) {
-            throw new RuntimeException("Token JWT inválido ou expirado!");
+            throw new RuntimeException("Token JWT inválido ou expirado!", exception);
         }
     }
 
+    public boolean validateToken(String tokenJWT) {
+        try {
+            getSubject(tokenJWT);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     private Instant dataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));

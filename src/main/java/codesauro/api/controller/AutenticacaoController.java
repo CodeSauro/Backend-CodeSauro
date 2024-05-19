@@ -12,6 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin("*")
@@ -34,4 +36,16 @@ public class AutenticacaoController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
+    @PostMapping("/validate-token")
+    public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        System.out.println("Token recebido: " + token);
+        boolean isValid = tokenService.validateToken(token);
+        System.out.println("Token valido: " + isValid);
+        return ResponseEntity.ok(Map.of("isValid", isValid));
+    }
 }
+
+
+
