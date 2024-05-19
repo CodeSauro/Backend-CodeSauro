@@ -16,9 +16,6 @@ public record DadosCadastroUsuario(
         @Pattern(regexp = "\\d{11}")
         String telefone,
         @NotBlank
-        @Pattern(regexp = "\\d{8}")
-        String data_de_nascimento,
-        @NotBlank
         String senha
     ) {
 }

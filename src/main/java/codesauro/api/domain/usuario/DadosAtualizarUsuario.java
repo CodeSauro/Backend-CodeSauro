@@ -10,7 +10,6 @@ public record DadosAtualizarUsuario(
         String apelido,
         String email,
         String telefone,
-        String data_de_nascimento,
         String senha
     ) {
 }

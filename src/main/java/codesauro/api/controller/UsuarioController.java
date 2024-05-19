@@ -17,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/usuarios")
+@CrossOrigin("*")
 public class UsuarioController {
 
     @Autowired
@@ -32,7 +33,7 @@ public class UsuarioController {
     @Transactional
     public ResponseEntity cadastrar(@RequestBody DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
         String senhaCriptografada = passwordEncoder.encode(dados.senha());
-        var usuario = new Usuario(dados.nome(), dados.apelido(), dados.email(), dados.telefone(), dados.data_de_nascimento(), senhaCriptografada);
+        var usuario = new Usuario(dados.nome(), dados.apelido(), dados.email(), dados.telefone(), senhaCriptografada);
         repository.save(usuario);
 
         var autenticacao = new Autenticacao();

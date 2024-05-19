@@ -21,16 +21,14 @@ public class Usuario {
     private String apelido;
     private String email;
     private String telefone;
-    private String data_de_nascimento;
     private String senha;
 
-    public Usuario(String nome, String apelido, String email, String telefone, String data_de_nascimento, String senha) {
+    public Usuario(String nome, String apelido, String email, String telefone, String senha) {
         this.ativo = true;
         this.nome = nome;
         this.apelido = apelido;
         this.email = email;
         this.telefone = telefone;
-        this.data_de_nascimento = data_de_nascimento;
         this.senha = senha;
     }
 
@@ -49,9 +47,6 @@ public class Usuario {
         }
         if (dados.telefone() != null) {
             this.telefone = dados.telefone();
-        }
-        if (dados.data_de_nascimento() != null) {
-            this.data_de_nascimento = dados.data_de_nascimento();
         }
         if (dados.senha() != null) {
             this.senha = dados.senha();
