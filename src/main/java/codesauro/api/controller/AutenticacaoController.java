@@ -40,9 +40,7 @@ public class AutenticacaoController {
     @PostMapping("/validate-token")
     public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody Map<String, String> request) {
         String token = request.get("token");
-        System.out.println("Token recebido: " + token);
         boolean isValid = tokenService.validateToken(token);
-        System.out.println("Token valido: " + isValid);
         return ResponseEntity.ok(Map.of("isValid", isValid));
     }
 }
