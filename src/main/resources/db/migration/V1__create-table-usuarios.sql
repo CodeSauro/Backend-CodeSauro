@@ -1,11 +1,10 @@
-create table usuarios(
-    id bigint not null auto_increment,
-    ativo boolean not null,
-    nome varchar(100) not null,
-    apelido varchar(100) not null unique,
-    email varchar(100) not null unique,
-    telefone varchar(11) not null unique,
-    senha varchar(100) not null,
-
-    primary key (id)
+CREATE TABLE usuarios (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    ativo BOOLEAN NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    apelido VARCHAR(100) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefone VARCHAR(11) NOT NULL UNIQUE,
+    senha VARCHAR(100) NOT NULL,
+    PRIMARY KEY (id)
 );
