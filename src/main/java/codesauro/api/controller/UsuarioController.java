@@ -64,14 +64,12 @@ public class UsuarioController {
     @GetMapping
     public ResponseEntity<Page<Usuario>> listar(Pageable paginacao) {
         var page = repository.findAllByAtivoTrue(paginacao);
-
         return ResponseEntity.ok(page);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity detalhar(@PathVariable Long id) {
         var usuario = repository.getReferenceById(id);
-
         return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario));
     }
 
@@ -80,7 +78,7 @@ public class UsuarioController {
     public ResponseEntity atualizar(@RequestBody @Valid DadosAtualizarUsuario dados) {
         var usuario = repository.getReferenceById(dados.id());
         usuario.atualizarInformacoes(dados);
-
+        repository.save(usuario);
         return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario));
     }
 
@@ -89,7 +87,7 @@ public class UsuarioController {
     public ResponseEntity excluir(@PathVariable Long id) {
         var usuario = repository.getReferenceById(id);
         usuario.excluir();
-
+        repository.save(usuario);
         return ResponseEntity.noContent().build();
     }
 
@@ -126,7 +124,32 @@ public class UsuarioController {
             progressoFaseRepository.save(proximaFase);
         }
 
+        int totalEstrelas = progressoFaseRepository.findByUsuarioId(id).stream()
+                .mapToInt(ProgressoFase::getEstrelas)
+                .sum();
+
+        var usuario = repository.getReferenceById(id);
+        usuario.atualizarInformacoes(new DadosAtualizarUsuario(id, null, null, null, null, null, totalEstrelas, null));
+        repository.save(usuario);
+
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/vidas")
+    @Transactional
+    public ResponseEntity atualizarVidas(
+            @PathVariable Long id,
+            @RequestParam boolean respostaCorreta) {
+
+        var usuario = repository.getReferenceById(id);
+
+        if (!respostaCorreta && usuario.getVidas() > 0) {
+            usuario.atualizarInformacoes(new DadosAtualizarUsuario(id, null, null, null, null, null, null, usuario.getVidas() - 1));
+            repository.save(usuario);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
 
 }

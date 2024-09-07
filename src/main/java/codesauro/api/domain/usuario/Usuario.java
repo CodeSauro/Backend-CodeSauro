@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(of = "id")
 public class Usuario {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Boolean ativo;
     private String nome;
@@ -22,6 +23,8 @@ public class Usuario {
     private String email;
     private String telefone;
     private String senha;
+    private int estrelas = 0;
+    private int vidas = 5;
 
     public Usuario(String nome, String apelido, String email, String telefone, String senha) {
         this.ativo = true;
@@ -30,12 +33,11 @@ public class Usuario {
         this.email = email;
         this.telefone = telefone;
         this.senha = senha;
+        this.estrelas = 0;
+        this.vidas = 5;
     }
 
     public void atualizarInformacoes(DadosAtualizarUsuario dados) {
-        if (dados.ativo() != null) {
-            this.ativo = dados.ativo();
-        }
         if (dados.nome() != null) {
             this.nome = dados.nome();
         }
@@ -51,10 +53,19 @@ public class Usuario {
         if (dados.senha() != null) {
             this.senha = dados.senha();
         }
+        if (dados.estrelas() != null) {
+            this.estrelas = dados.estrelas();
+        }
+        if (dados.vidas() != null && dados.vidas() >= 0 && dados.vidas() <= 5) {
+            this.vidas = dados.vidas();
+        } else if (dados.vidas() != null) {
+            throw new IllegalArgumentException("O número de vidas deve estar entre 0 e 5.");
+        }
     }
+
+
 
     public void excluir() {
         this.ativo = false;
     }
-
 }

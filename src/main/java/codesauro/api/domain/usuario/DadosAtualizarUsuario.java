@@ -1,15 +1,17 @@
 package codesauro.api.domain.usuario;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public record DadosAtualizarUsuario(
-        @NotNull
         Long id,
-        Boolean ativo,
         String nome,
         String apelido,
         String email,
         String telefone,
-        String senha
-    ) {
+        String senha,
+        Integer estrelas,
+        Integer vidas
+) {
 }
