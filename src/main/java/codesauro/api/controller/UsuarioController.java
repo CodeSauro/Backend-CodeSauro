@@ -6,7 +6,9 @@ import codesauro.api.domain.progresso.ProgressoFase;
 import codesauro.api.domain.progresso.ProgressoFaseRepository;
 import codesauro.api.domain.usuario.Usuario;
 import codesauro.api.domain.usuario.UsuarioRepository;
-import codesauro.api.domain.usuario.*;
+import codesauro.api.domain.usuario.DadosCadastroUsuario;
+import codesauro.api.domain.usuario.DadosAtualizarUsuario;
+import codesauro.api.domain.usuario.DadosDetalhamentoUsuario;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.Duration;
 import java.util.List;
 
 @RestController
@@ -58,7 +61,7 @@ public class UsuarioController {
         autenticacaoRepository.save(autenticacao);
 
         var uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(usuario.getId()).toUri();
-        return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario));
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
     }
 
     @GetMapping
@@ -70,7 +73,13 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity detalhar(@PathVariable Long id) {
         var usuario = repository.getReferenceById(id);
-        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario));
+
+        // Regenerar vidas ao detalhar o usuário
+        usuario.regenerarVidas();
+        repository.save(usuario);
+
+        // Retorna o usuário com o tempo de regeneração formatado
+        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
     }
 
     @PutMapping
@@ -79,7 +88,9 @@ public class UsuarioController {
         var usuario = repository.getReferenceById(dados.id());
         usuario.atualizarInformacoes(dados);
         repository.save(usuario);
-        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario));
+
+        // Retorna o usuário com o tempo de regeneração formatado
+        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
     }
 
     @DeleteMapping("/{id}")
@@ -143,13 +154,19 @@ public class UsuarioController {
 
         var usuario = repository.getReferenceById(id);
 
-        if (!respostaCorreta && usuario.getVidas() > 0) {
-            usuario.atualizarInformacoes(new DadosAtualizarUsuario(id, null, null, null, null, null, null, usuario.getVidas() - 1));
+        if (!respostaCorreta) {
+            usuario.perderVida();
             repository.save(usuario);
         }
 
         return ResponseEntity.ok().build();
     }
 
-
+    // Função auxiliar para calcular o tempo restante para a próxima vida formatado como hh:mm:ss
+    private String calcularTempoFormatado(Usuario usuario) {
+        var tempoRestante = usuario.getTempoParaProximaVida();
+        long minutos = tempoRestante.toMinutes();
+        long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
+        return String.format("00:%02d:%02d", minutos, segundos);
+    }
 }

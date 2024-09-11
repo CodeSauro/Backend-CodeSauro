@@ -6,6 +6,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 @Table(name = "usuarios")
 @Entity(name = "Usuario")
 @Getter
@@ -26,6 +29,9 @@ public class Usuario {
     private int estrelas = 0;
     private int vidas = 5;
 
+    @Column(name = "ultima_atualizacao_vidas")
+    private LocalDateTime ultimaAtualizacaoVidas = LocalDateTime.now();
+
     public Usuario(String nome, String apelido, String email, String telefone, String senha) {
         this.ativo = true;
         this.nome = nome;
@@ -35,6 +41,7 @@ public class Usuario {
         this.senha = senha;
         this.estrelas = 0;
         this.vidas = 5;
+        this.ultimaAtualizacaoVidas = LocalDateTime.now();
     }
 
     public void atualizarInformacoes(DadosAtualizarUsuario dados) {
@@ -63,9 +70,45 @@ public class Usuario {
         }
     }
 
-
-
     public void excluir() {
         this.ativo = false;
+    }
+
+    // Método para regenerar vidas
+    public void regenerarVidas() {
+        if (this.vidas < 5) {
+            LocalDateTime agora = LocalDateTime.now();
+            Duration duracao = Duration.between(this.ultimaAtualizacaoVidas, agora);
+
+            long minutosPassados = duracao.toMinutes();
+            int vidasParaAdicionar = (int) Math.min(minutosPassados, 5 - this.vidas);
+
+            if (vidasParaAdicionar > 0) {
+                this.vidas += vidasParaAdicionar;
+                this.ultimaAtualizacaoVidas = agora;
+            }
+        }
+    }
+
+    // Método para perder vida e atualizar a última atualização
+    public void perderVida() {
+        if (this.vidas > 0) {
+            this.vidas -= 1;
+            this.ultimaAtualizacaoVidas = LocalDateTime.now();
+        }
+    }
+
+    // Método para obter o tempo restante até a próxima vida ser regenerada
+    public Duration getTempoParaProximaVida() {
+        if (this.vidas < 5) {
+            LocalDateTime agora = LocalDateTime.now();
+            Duration duracao = Duration.between(this.ultimaAtualizacaoVidas, agora);
+            long minutosPassados = duracao.toMinutes();
+            long minutosRestantes = 1 - (minutosPassados % 1); // Considera 1 minuto para regenerar uma vida
+
+            return Duration.ofMinutes(minutosRestantes);
+        } else {
+            return Duration.ZERO; // Se o jogador já tem 5 vidas, não há regeneração pendente
+        }
     }
 }
