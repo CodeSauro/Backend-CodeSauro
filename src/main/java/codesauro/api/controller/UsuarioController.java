@@ -162,11 +162,13 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
-    // Função auxiliar para calcular o tempo restante para a próxima vida formatado como hh:mm:ss
+    // Função auxiliar para calcular o tempo restante para regenerar todas as vidas formatado como mm:ss
     private String calcularTempoFormatado(Usuario usuario) {
-        var tempoRestante = usuario.getTempoParaProximaVida();
+        var tempoRestante = usuario.getTempoParaTodasVidas();
         long minutos = tempoRestante.toMinutes();
         long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
-        return String.format("00:%02d:%02d", minutos, segundos);
+        return String.format("%02d:%02d", minutos, segundos);
     }
+
+
 }
