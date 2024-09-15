@@ -103,11 +103,18 @@ public class Usuario {
     public void perderVida() {
         if (this.vidas > 0) {
             this.vidas -= 1;
-            if (this.vidas == 4) {
-                this.ultimaAtualizacaoVidas = LocalDateTime.now();
+            LocalDateTime agora = LocalDateTime.now();
+
+            if (this.regeneracaoPausada) {
+                this.tempoRestantePausado += 60;
+            } else {
+                if (this.vidas < 5) {
+                    this.ultimaAtualizacaoVidas = agora;
+                }
             }
         }
     }
+
 
     public Duration getTempoParaTodasVidas() {
         if (this.regeneracaoPausada && this.tempoRestantePausado != null) {
@@ -140,5 +147,12 @@ public class Usuario {
             this.ultimaAtualizacaoVidas = LocalDateTime.now().minusSeconds(60 * (5 - this.vidas) - this.tempoRestantePausado);
             this.tempoRestantePausado = null;
         }
+    }
+
+    public String calcularTempoFormatado(Usuario usuario) {
+        var tempoRestante = usuario.getTempoParaTodasVidas();
+        long minutos = tempoRestante.toMinutes();
+        long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
+        return String.format("%02d:%02d", minutos, segundos);
     }
 }

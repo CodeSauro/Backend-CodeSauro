@@ -63,7 +63,7 @@ public class UsuarioController {
         autenticacaoRepository.save(autenticacao);
 
         var uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(usuario.getId()).toUri();
-        return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
+        return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario, usuario.calcularTempoFormatado(usuario)));
     }
 
     @GetMapping
@@ -77,7 +77,7 @@ public class UsuarioController {
         var usuario = repository.getReferenceById(id);
         usuario.regenerarVidas();
         repository.save(usuario);
-        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
+        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, usuario.calcularTempoFormatado(usuario)));
     }
 
     @PutMapping
@@ -87,7 +87,7 @@ public class UsuarioController {
         usuario.atualizarInformacoes(dados);
         repository.save(usuario);
 
-        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
+        return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, usuario.calcularTempoFormatado(usuario)));
     }
 
     @DeleteMapping("/{id}")
@@ -178,11 +178,5 @@ public class UsuarioController {
         repository.save(usuario);
         return ResponseEntity.noContent().build();
     }
-
-    private String calcularTempoFormatado(Usuario usuario) {
-        var tempoRestante = usuario.getTempoParaTodasVidas();
-        long minutos = tempoRestante.toMinutes();
-        long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
-        return String.format("%02d:%02d", minutos, segundos);
-    }
+    
 }
