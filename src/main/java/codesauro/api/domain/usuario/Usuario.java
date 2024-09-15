@@ -32,6 +32,12 @@ public class Usuario {
     @Column(name = "ultima_atualizacao_vidas")
     private LocalDateTime ultimaAtualizacaoVidas = LocalDateTime.now();
 
+    @Column(name = "regeneracao_pausada")
+    private Boolean regeneracaoPausada = false;
+
+    @Column(name = "tempo_restante_pausado")
+    private Long tempoRestantePausado;
+
     public Usuario(String nome, String apelido, String email, String telefone, String senha) {
         this.ativo = true;
         this.nome = nome;
@@ -42,6 +48,8 @@ public class Usuario {
         this.estrelas = 0;
         this.vidas = 5;
         this.ultimaAtualizacaoVidas = LocalDateTime.now();
+        this.regeneracaoPausada = false;
+        this.tempoRestantePausado = null;
     }
 
     public void atualizarInformacoes(DadosAtualizarUsuario dados) {
@@ -74,52 +82,63 @@ public class Usuario {
         this.ativo = false;
     }
 
-    // Método para regenerar vidas
     public void regenerarVidas() {
+        if (this.regeneracaoPausada) {
+            return;
+        }
         if (this.vidas < 5) {
             LocalDateTime agora = LocalDateTime.now();
             Duration duracao = Duration.between(this.ultimaAtualizacaoVidas, agora);
 
-            // Tempo total em minutos que se passou desde a última atualização
             long minutosPassados = duracao.toMinutes();
             int vidasParaAdicionar = (int) Math.min(minutosPassados, 5 - this.vidas);
 
             if (vidasParaAdicionar > 0) {
                 this.vidas += vidasParaAdicionar;
-                // Atualiza a última atualização das vidas apenas se vidas forem regeneradas
                 this.ultimaAtualizacaoVidas = agora.minusMinutes(minutosPassados - vidasParaAdicionar);
             }
         }
     }
 
-    // Método para perder vida
     public void perderVida() {
         if (this.vidas > 0) {
             this.vidas -= 1;
-            // Se as vidas estavam em 5, atualize a hora da primeira perda
             if (this.vidas == 4) {
                 this.ultimaAtualizacaoVidas = LocalDateTime.now();
             }
         }
     }
 
-    // Método para obter o tempo restante até todas as vidas serem regeneradas
     public Duration getTempoParaTodasVidas() {
+        if (this.regeneracaoPausada && this.tempoRestantePausado != null) {
+            return Duration.ofSeconds(this.tempoRestantePausado);
+        }
+
         if (this.vidas < 5) {
             LocalDateTime agora = LocalDateTime.now();
             Duration duracao = Duration.between(this.ultimaAtualizacaoVidas, agora);
 
-            // Calcula o tempo total restante para regenerar todas as vidas faltantes
             int vidasFaltantes = 5 - this.vidas;
-
-            // Tempo total em segundos para regenerar todas as vidas faltantes
             long tempoTotalRestanteSegundos = (vidasFaltantes * 60) - duracao.getSeconds();
 
-            // Garantir que o tempo não seja negativo
             return Duration.ofSeconds(tempoTotalRestanteSegundos > 0 ? tempoTotalRestanteSegundos : 0);
         } else {
-            return Duration.ZERO; // Se o jogador já tem 5 vidas, não há regeneração pendente
+            return Duration.ZERO;
         }
     }
 
+    public void pausarRegeneracao() {
+        if (!this.regeneracaoPausada) {
+            this.regeneracaoPausada = true;
+            this.tempoRestantePausado = getTempoParaTodasVidas().getSeconds();
+        }
+    }
+
+    public void retomarRegeneracao() {
+        if (this.regeneracaoPausada) {
+            this.regeneracaoPausada = false;
+            this.ultimaAtualizacaoVidas = LocalDateTime.now().minusSeconds(60 * (5 - this.vidas) - this.tempoRestantePausado);
+            this.tempoRestantePausado = null;
+        }
+    }
 }

@@ -13,10 +13,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
@@ -73,12 +75,8 @@ public class UsuarioController {
     @GetMapping("/{id}")
     public ResponseEntity detalhar(@PathVariable Long id) {
         var usuario = repository.getReferenceById(id);
-
-        // Regenerar vidas ao detalhar o usuário
         usuario.regenerarVidas();
         repository.save(usuario);
-
-        // Retorna o usuário com o tempo de regeneração formatado
         return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
     }
 
@@ -89,7 +87,6 @@ public class UsuarioController {
         usuario.atualizarInformacoes(dados);
         repository.save(usuario);
 
-        // Retorna o usuário com o tempo de regeneração formatado
         return ResponseEntity.ok(new DadosDetalhamentoUsuario(usuario, calcularTempoFormatado(usuario)));
     }
 
@@ -162,13 +159,30 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
-    // Função auxiliar para calcular o tempo restante para regenerar todas as vidas formatado como mm:ss
+    @PutMapping("/{id}/pausar-regeneracao")
+    @Transactional
+    public ResponseEntity<Void> pausarRegeneracao(@PathVariable Long id) {
+        var usuario = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        usuario.pausarRegeneracao();
+        repository.save(usuario);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/retomar-regeneracao")
+    @Transactional
+    public ResponseEntity<Void> retomarRegeneracao(@PathVariable Long id) {
+        var usuario = repository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        usuario.retomarRegeneracao();
+        repository.save(usuario);
+        return ResponseEntity.noContent().build();
+    }
+
     private String calcularTempoFormatado(Usuario usuario) {
         var tempoRestante = usuario.getTempoParaTodasVidas();
         long minutos = tempoRestante.toMinutes();
         long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
         return String.format("%02d:%02d", minutos, segundos);
     }
-
-
 }

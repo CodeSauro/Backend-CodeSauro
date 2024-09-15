@@ -6,5 +6,10 @@ CREATE TABLE usuarios (
     email VARCHAR(100) NOT NULL UNIQUE,
     telefone VARCHAR(11) NOT NULL UNIQUE,
     senha VARCHAR(100) NOT NULL,
+    estrelas INT NOT NULL DEFAULT 0,
+    vidas INT NOT NULL DEFAULT 5,
+    ultima_atualizacao_vidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    regeneracao_pausada BOOLEAN DEFAULT FALSE,
+    tempo_restante_pausado BIGINT DEFAULT NULL,
     PRIMARY KEY (id)
 );

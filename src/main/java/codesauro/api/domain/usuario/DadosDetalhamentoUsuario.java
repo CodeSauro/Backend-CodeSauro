@@ -10,9 +10,9 @@ public record DadosDetalhamentoUsuario(
         String senha,
         int estrelas,
         int vidas,
-        String tempoParaProximaVida // Novo campo para o tempo formatado
+        String tempoParaProximaVida,
+        Boolean regeneracaoPausada
 ) {
-    // Construtor que formata o tempo restante para a próxima vida
     public DadosDetalhamentoUsuario(Usuario usuario, String tempoParaProximaVida) {
         this(
                 usuario.getId(),
@@ -24,7 +24,8 @@ public record DadosDetalhamentoUsuario(
                 usuario.getSenha(),
                 usuario.getEstrelas(),
                 usuario.getVidas(),
-                tempoParaProximaVida // Adicionando o campo tempo formatado
+                tempoParaProximaVida,
+                usuario.getRegeneracaoPausada()
         );
     }
 }

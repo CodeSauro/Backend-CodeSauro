@@ -1,2 +1,0 @@
-ALTER TABLE usuarios
-ADD COLUMN ultima_atualizacao_vidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
