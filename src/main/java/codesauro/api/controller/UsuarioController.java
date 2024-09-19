@@ -44,6 +44,7 @@ public class UsuarioController {
     @PostMapping
     @Transactional
     public ResponseEntity cadastrar(@RequestBody DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
+
         String senhaCriptografada = passwordEncoder.encode(dados.senha());
         var usuario = new Usuario(dados.nome(), dados.apelido(), dados.email(), dados.telefone(), senhaCriptografada);
         repository.save(usuario);
@@ -58,6 +59,7 @@ public class UsuarioController {
         }
 
         var autenticacao = new Autenticacao();
+        autenticacao.setUsuario(usuario);
         autenticacao.setLogin(dados.apelido());
         autenticacao.setSenha(senhaCriptografada);
         autenticacaoRepository.save(autenticacao);

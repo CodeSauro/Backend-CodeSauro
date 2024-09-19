@@ -1,5 +1,6 @@
 package codesauro.api.domain.autenticacao;
 
+import codesauro.api.domain.usuario.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,8 +20,13 @@ import java.util.List;
 public class Autenticacao implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @OneToOne
+    @MapsId
+    @JoinColumn(name = "id")
+    private Usuario usuario;
+
     private String login;
     private String senha;
 
