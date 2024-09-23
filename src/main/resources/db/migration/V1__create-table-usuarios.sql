@@ -11,5 +11,7 @@ CREATE TABLE usuarios (
     ultima_atualizacao_vidas TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     regeneracao_pausada BOOLEAN DEFAULT FALSE,
     tempo_restante_pausado BIGINT DEFAULT NULL,
+    reset_token VARCHAR(255),
+    token_expiration TIMESTAMP,
     PRIMARY KEY (id)
 );

@@ -2,6 +2,9 @@ package codesauro.api.controller;
 
 import codesauro.api.domain.autenticacao.Autenticacao;
 import codesauro.api.domain.autenticacao.AutenticacaoRepository;
+import codesauro.api.domain.email.DadosRecuperacaoSenha;
+import codesauro.api.domain.email.DadosRedefinicaoSenha;
+import codesauro.api.domain.email.EmailService;
 import codesauro.api.domain.progresso.ProgressoFase;
 import codesauro.api.domain.progresso.ProgressoFaseRepository;
 import codesauro.api.domain.usuario.Usuario;
@@ -22,7 +25,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Random;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -40,6 +46,9 @@ public class UsuarioController {
 
     @Autowired
     private ProgressoFaseRepository progressoFaseRepository;
+
+    @Autowired
+    private EmailService emailService;
 
     @PostMapping
     @Transactional
@@ -180,5 +189,44 @@ public class UsuarioController {
         repository.save(usuario);
         return ResponseEntity.noContent().build();
     }
-    
+
+    @PostMapping("/solicitar-recuperacao")
+    @Transactional
+    public ResponseEntity<Void> solicitarRecuperacaoSenha(@RequestBody DadosRecuperacaoSenha dados) {
+        var usuario = repository.findByEmail(dados.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+
+        String token = String.format("%06d", new Random().nextInt(999999));
+        usuario.setResetToken(token);
+        usuario.setTokenExpiration(LocalDateTime.now().plusHours(1));
+        repository.save(usuario);
+
+        emailService.enviarEmailRecuperacao(usuario.getEmail(), token);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+    @PutMapping("/redefinir-senha")
+    @Transactional
+    public ResponseEntity<Void> redefinirSenha(@RequestBody DadosRedefinicaoSenha dados) {
+
+        var usuario = repository.findByResetToken(dados.getToken())
+                .filter(u -> u.getTokenExpiration().isAfter(LocalDateTime.now()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido ou expirado"));
+
+        String senhaCriptografada = passwordEncoder.encode(dados.getNovaSenha());
+        usuario.setSenha(senhaCriptografada);
+        usuario.setResetToken(null);
+        usuario.setTokenExpiration(null);
+        repository.save(usuario);
+
+        var autenticacao = autenticacaoRepository.findByUsuario(usuario)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuário não encontrado na tabela de autenticação"));
+        autenticacao.setSenha(senhaCriptografada);
+        autenticacaoRepository.save(autenticacao);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

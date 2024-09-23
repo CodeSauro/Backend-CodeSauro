@@ -28,6 +28,8 @@ public class Usuario {
     private String senha;
     private int estrelas = 0;
     private int vidas = 5;
+    private String resetToken;
+    private LocalDateTime tokenExpiration;
 
     @Column(name = "ultima_atualizacao_vidas")
     private LocalDateTime ultimaAtualizacaoVidas = LocalDateTime.now();
@@ -154,5 +156,25 @@ public class Usuario {
         long minutos = tempoRestante.toMinutes();
         long segundos = tempoRestante.minusMinutes(minutos).getSeconds();
         return String.format("%02d:%02d", minutos, segundos);
+    }
+
+    public void setSenha(String senha) {
+        this.senha = senha;
+    }
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    public LocalDateTime getTokenExpiration() {
+        return tokenExpiration;
+    }
+
+    public void setTokenExpiration(LocalDateTime tokenExpiration) {
+        this.tokenExpiration = tokenExpiration;
     }
 }

@@ -30,6 +30,8 @@ public class SecurityConfigurations {
                     req.requestMatchers(HttpMethod.POST, "/usuarios").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/auth").permitAll();
                     req.requestMatchers(HttpMethod.POST, "/auth/validate-token").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/usuarios/solicitar-recuperacao").permitAll();
+                    req.requestMatchers(HttpMethod.PUT, "/usuarios/redefinir-senha").permitAll();
                     req.anyRequest().authenticated();
                 })
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
