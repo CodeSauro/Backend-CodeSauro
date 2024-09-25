@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Table(name = "usuarios")
 @Entity(name = "Usuario")
@@ -30,6 +31,8 @@ public class Usuario {
     private int vidas = 5;
     private String resetToken;
     private LocalDateTime tokenExpiration;
+    private Boolean confirmado = false;
+    private String confirmacaoToken;
 
     @Column(name = "ultima_atualizacao_vidas")
     private LocalDateTime ultimaAtualizacaoVidas = LocalDateTime.now();
@@ -41,7 +44,7 @@ public class Usuario {
     private Long tempoRestantePausado;
 
     public Usuario(String nome, String apelido, String email, String telefone, String senha) {
-        this.ativo = true;
+        this.ativo = false;
         this.nome = nome;
         this.apelido = apelido;
         this.email = email;
@@ -52,6 +55,7 @@ public class Usuario {
         this.ultimaAtualizacaoVidas = LocalDateTime.now();
         this.regeneracaoPausada = false;
         this.tempoRestantePausado = null;
+        this.confirmacaoToken = UUID.randomUUID().toString();
     }
 
     public void atualizarInformacoes(DadosAtualizarUsuario dados) {
@@ -176,5 +180,17 @@ public class Usuario {
 
     public void setTokenExpiration(LocalDateTime tokenExpiration) {
         this.tokenExpiration = tokenExpiration;
+    }
+
+    public void setConfirmacaoToken(String confirmacaoToken) {
+        this.confirmacaoToken = confirmacaoToken;
+    }
+
+    public void setConfirmado(Boolean confirmado) {
+        this.confirmado = confirmado;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
     }
 }

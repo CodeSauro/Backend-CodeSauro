@@ -13,5 +13,8 @@ CREATE TABLE usuarios (
     tempo_restante_pausado BIGINT DEFAULT NULL,
     reset_token VARCHAR(255),
     token_expiration TIMESTAMP,
+    confirmado BOOLEAN DEFAULT FALSE,
+    confirmacao_token VARCHAR(255),
+
     PRIMARY KEY (id)
 );

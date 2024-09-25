@@ -55,6 +55,7 @@ public class UsuarioController {
     public ResponseEntity cadastrar(@RequestBody DadosCadastroUsuario dados, UriComponentsBuilder uriBuilder) {
 
         String senhaCriptografada = passwordEncoder.encode(dados.senha());
+
         var usuario = new Usuario(dados.nome(), dados.apelido(), dados.email(), dados.telefone(), senhaCriptografada);
         repository.save(usuario);
 
@@ -73,8 +74,10 @@ public class UsuarioController {
         autenticacao.setSenha(senhaCriptografada);
         autenticacaoRepository.save(autenticacao);
 
+        emailService.enviarEmailConfirmacao(usuario.getEmail(), usuario.getConfirmacaoToken());
+
         var uri = uriBuilder.path("/usuarios/{id}").buildAndExpand(usuario.getId()).toUri();
-        return ResponseEntity.created(uri).body(new DadosDetalhamentoUsuario(usuario, usuario.calcularTempoFormatado(usuario)));
+        return ResponseEntity.created(uri).body("Cadastro realizado com sucesso. Verifique seu email para confirmar o cadastro.");
     }
 
     @GetMapping
@@ -227,6 +230,20 @@ public class UsuarioController {
         autenticacaoRepository.save(autenticacao);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/confirmar")
+    @Transactional
+    public ResponseEntity<Void> confirmarEmail(@RequestParam("token") String token) {
+        var usuario = repository.findByConfirmacaoToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido"));
+
+        usuario.setAtivo(true);
+        usuario.setConfirmado(true);
+        usuario.setConfirmacaoToken(null);
+        repository.save(usuario);
+
+        return ResponseEntity.ok().build();
     }
 
 }

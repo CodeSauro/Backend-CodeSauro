@@ -31,11 +31,14 @@ public class AutenticacaoController {
             var authenticationToken = new UsernamePasswordAuthenticationToken(dados.login(), dados.senha());
             var authentication = manager.authenticate(authenticationToken);
             var tokenJWT = tokenService.gerarToken((Autenticacao) authentication.getPrincipal());
+
             return ResponseEntity.ok(new DadosTokenJWT(tokenJWT));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
+
 
     @PostMapping("/validate-token")
     public ResponseEntity<Map<String, Boolean>> validateToken(@RequestBody Map<String, String> request) {
